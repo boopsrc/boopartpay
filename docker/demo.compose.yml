@@ -1,5 +1,8 @@
 # Página de demonstração do reconhecimento facial (pasta ../demo).
-# A câmera só funciona em contexto seguro: abra por http://localhost:31910.
+# A câmera só funciona em contexto seguro:
+#   - no computador: http://localhost:31910
+#   - no celular (mesma rede): https://<IP-do-computador>:31911 (certificado autoassinado;
+#     o navegador avisa uma vez, aceite para continuar)
 services:
   boopdemo:
     build: ../demo
@@ -8,3 +11,9 @@ services:
     restart: unless-stopped
     ports:
       - "31910:80"
+      - "31911:443"
+    volumes:
+      - boopdemo-certs:/etc/nginx/certs
+
+volumes:
+  boopdemo-certs:

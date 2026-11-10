@@ -69,9 +69,12 @@ Write-TextFile $cfgPath $cfg
 $recEnv = "BOOP_JWT_SECRET=$JwtSecret`nBOOP_CLIENT_ADMIN_SECRET=$ClientSecret`n"
 Write-TextFile (Join-Path $RecDir '.env') $recEnv
 
-# ---------------------------------------------------------------- 5. subir booprecognition
+# ---------------------------------------------------------------- 5. subir booprecognition + demo
+#    a demo nao depende de nada: sobe ja, junto, e fica no ar mesmo se o resto falhar
 Step 'Subindo booprecognition (o primeiro build baixa os modelos e demora)'
 Run docker @('compose', '-p', 'booprecognition', '-f', (Join-Path $Root 'docker\booprecognition.compose.yml'), 'up', '-d', '--build')
+Step 'Subindo demo de reconhecimento facial'
+Run docker @('compose', '-p', 'boopdemo', '-f', (Join-Path $Root 'docker\demo.compose.yml'), 'up', '-d', '--build')
 
 # ---------------------------------------------------------------- 6. aguardar e pegar token
 Step "Aguardando booprecognition em $RecognitionUrl e emitindo token"
@@ -113,13 +116,18 @@ Step 'Subindo boopateway (API + portal)'
 Push-Location $GateDir
 try { Run docker @('compose', 'up', '-d', '--build') } finally { Pop-Location }
 
-# ---------------------------------------------------------------- 9. subir demo
-Step 'Subindo demo de reconhecimento facial'
-Run docker @('compose', '-p', 'boopdemo', '-f', (Join-Path $Root 'docker\demo.compose.yml'), 'up', '-d', '--build')
-
-# ---------------------------------------------------------------- 10. resumo
+# ---------------------------------------------------------------- 9. resumo
 Step 'Ambiente pronto'
+$LanIp = $null
+try {
+    # IP da rede local: o adaptador com gateway padrao (ignora VirtualBox, WSL, Hyper-V, Docker)
+    $LanIp = Get-NetIPConfiguration -ErrorAction Stop |
+        Where-Object { $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq 'Up' } |
+        ForEach-Object { $_.IPv4Address.IPAddress } | Select-Object -First 1
+} catch { }
+if (-not $LanIp) { $LanIp = '<IP-do-computador>' }
 Write-Host 'demo (reconhecimento):     http://localhost:31910'
+Write-Host "demo no celular (HTTPS):   https://${LanIp}:31911  (certificado autoassinado: aceite o aviso)"
 Write-Host "booprecognition (Swagger): $RecognitionUrl/docs"
 Write-Host 'boopateway API:            http://localhost:31800'
 Write-Host 'boopateway portal:         http://localhost:31801'

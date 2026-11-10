@@ -35,9 +35,26 @@
   .num { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
     background: var(--accent); color: #062421; font-weight: 700; margin-bottom: 10px; }
   .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
-  .feature-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-  .feature-list li { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; }
+  .feature-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .feature-list li { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+    display: flex; flex-direction: column; gap: 8px; border-top: 3px solid var(--c); }
+  .feature-list svg { width: 100%; height: 130px; }
+  .feature-list h3 { margin: 0; font-size: 17px; display: flex; align-items: center; }
+  .feature-list p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+  /* rosto 2D: base apagada + característica destacada que se desenha e pisca os pontos */
+  .face-base { fill: none; stroke: #2c3854; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .face-hi { fill: none; stroke: var(--c); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 3.2s ease-in-out infinite; }
+  .face-dot { fill: var(--c); transform-box: fill-box; transform-origin: center; opacity: 0;
+    animation: pop 3.2s ease-out infinite; }
+  @keyframes draw { 0% { stroke-dashoffset: var(--len); opacity: 1; } 45%, 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes pop { 0%, 40% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.6); } 58%, 85% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .face-hi { animation: none; stroke-dashoffset: 0; }
+    .face-dot { animation: none; opacity: 1; }
+  }
   code { background: #1b2336; padding: 2px 6px; border-radius: 6px; font-size: .9em; }
   .note { color: var(--muted); font-size: 14px; }
 
@@ -58,8 +75,7 @@
   .stage { position: relative; flex: 1; min-height: 240px; background: #05070b; border: 1px solid var(--line);
     border-radius: 16px; overflow: hidden; display: grid; place-items: center; }
   .stage video, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-  .stage video { transform: scaleX(-1); }          /* espelho; o canvas espelha as coordenadas ao desenhar */
-  .stage.hide-video video { opacity: 0; }
+  .stage video { opacity: 0; }                     /* a imagem da câmera nunca aparece: só os pontos */
   .placeholder { position: relative; text-align: center; color: var(--muted); padding: 24px; max-width: 46ch; line-height: 1.5; }
   .placeholder svg { width: 72px; height: 72px; color: var(--accent); margin-bottom: 8px; }
   .stats { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -77,9 +93,38 @@
   .dots i.active { background: var(--accent); }
   .counter { color: var(--muted); font-size: 13px; min-width: 44px; text-align: center; }
 
-  @media (max-width: 640px) {
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .flash.go { animation: flash .35s ease-out; }
+  @keyframes flash { from { opacity: .55; } to { opacity: 0; } }
+  [hidden] { display: none !important; }
+  /* indicador de gravação do GIF */
+  .rec { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    border-radius: 999px; background: rgba(5,7,11,.8); border: 1px solid var(--danger); color: var(--text);
+    font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rec i { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  /* tela cheia: só o slide "Ao vivo", palco ocupando o resto */
+  .slide.demo:fullscreen { background: var(--bg); padding: 12px 16px 16px; width: 100vw; height: 100vh; }
+
+  /* ---------------------------------------------------------------- celular (retrato ou paisagem) */
+  @media (max-width: 640px), (max-height: 480px) {
     .slide { padding: 32px 16px 88px; }
-    .slide.demo { padding: 12px 16px 80px; }
+    .slide.demo { padding: 10px 12px 72px; gap: 8px; height: 100dvh; }
+    .slide.demo h2 { font-size: 22px; }
+    .demo-head { gap: 8px; }
+    .controls { gap: 6px; width: 100%; }
+    .controls button { padding: 8px 10px; font-size: 14px; flex: 1 1 auto; }
+    label.chk { font-size: 13px; }
+    .stats { gap: 6px; }
+    .stat { padding: 4px 10px; font-size: 12px; }
+    .stat.opt { display: none; }
+    .stage { min-height: 0; border-radius: 12px; }
+    .legend { gap: 10px; font-size: 11px; }
+    .nav { height: 56px; }
+  }
+  @media (max-height: 480px) {
+    .slide.demo h2, .legend { display: none; }
   }
 </style>
 </head>
@@ -93,6 +138,7 @@
       <h1>Reconhecimento facial<br>em tempo real</h1>
       <p class="lead">Como uma câmera comum vira um mapa de pontos do rosto.</p>
       <p class="note">Use ← → (ou os botões abaixo) para navegar.</p>
+      <div><button class="primary" id="goLive">Ir para a câmera ao vivo →</button></div>
     </section>
 
     <!-- 2 -->
@@ -100,9 +146,9 @@
       <span class="eyebrow">Pipeline</span>
       <h2>Do quadro de vídeo aos pontos</h2>
       <div class="grid">
-        <div class="card"><span class="num">1</span><h3>Captura</h3><p>A câmera entrega quadros (frames) de vídeo, 30 vezes por segundo.</p></div>
+        <div class="card"><span class="num">1</span><h3>Captura</h3><p>A câmera entrega quadros (frames).</p></div>
         <div class="card"><span class="num">2</span><h3>Detecção</h3><p>Um modelo leve encontra cada rosto no quadro e devolve uma caixa delimitadora.</p></div>
-        <div class="card"><span class="num">3</span><h3>Landmarks</h3><p>Para cada rosto, um segundo modelo estima centenas de pontos (x, y, z) sobre a face.</p></div>
+        <div class="card"><span class="num">3</span><h3>Landmarks</h3><p>Para cada rosto, um modelo de landmarks estima pontos de referência sobre a face. Exemplos: Google ML Kit (contornos), MediaPipe Face Mesh (478 pontos), dlib (68 pontos), InsightFace.</p></div>
         <div class="card"><span class="num">4</span><h3>Contornos</h3><p>Os pontos são agrupados por característica: oval do rosto, olhos, sobrancelhas, lábios…</p></div>
       </div>
     </section>
@@ -115,45 +161,33 @@
       <ul class="feature-list" id="featureList"></ul>
     </section>
 
-    <!-- 4 -->
-    <section class="slide">
-      <span class="eyebrow">Várias pessoas</span>
-      <h2>N rostos, N conjuntos de pontos</h2>
-      <div class="grid">
-        <div class="card"><h3>Até 10 rostos</h3><p>O detector roda uma vez por quadro e devolve todos os rostos; cada um recebe sua própria cor e seus próprios contornos.</p></div>
-        <div class="card"><h3>478 pontos por rosto</h3><p>Malha densa com profundidade (z), incluindo íris. Os contornos usam um subconjunto desses pontos.</p></div>
-        <div class="card"><h3>100% local</h3><p>O modelo roda no navegador (WebAssembly + GPU). Nenhuma imagem sai do computador.</p></div>
-      </div>
-      <p class="note">ML Kit é o SDK do Google para Android/iOS. Na web, o equivalente do mesmo time é o <b>MediaPipe Face Landmarker</b>, usado nesta página.</p>
-    </section>
-
-    <!-- 5: demo -->
+    <!-- 4: demo -->
     <section class="slide demo">
       <div class="demo-head">
         <h2>Ao vivo</h2>
         <div class="controls">
           <button class="primary" id="camBtn">Ligar câmera</button>
-          <div class="seg" id="modeSeg">
-            <button data-mode="contours" class="active">Contornos</button>
-            <button data-mode="points">Pontos</button>
-            <button data-mode="mesh">Malha</button>
-          </div>
-          <label class="chk"><input type="checkbox" id="showVideo" checked> mostrar vídeo</label>
-          <label class="chk" title="Analisa também 4 recortes do quadro para achar rostos pequenos (pessoas mais longe). Custa mais processamento."><input type="checkbox" id="groupMode" checked> modo grupo (rostos pequenos)</label>
+          <button id="snapBtn" disabled title="Salva uma imagem PNG com os pontos (sem a foto)">📷 Salvar frame</button>
+          <button id="gifBtn" disabled title="Grava 5 segundos da animação e salva como GIF (sem a foto)">🎞️ GIF 5s</button>
+          <button id="flipBtn" disabled hidden title="Alterna entre câmera frontal e traseira">🔄 Trocar câmera</button>
+          <button id="fsBtn" hidden title="Tela cheia">⛶ Tela cheia</button>
+          <label class="chk" title="Procura também rostos pequenos (pessoas mais longe) analisando recortes do quadro. Custa mais processamento."><input type="checkbox" id="groupMode" checked> modo grupo (rostos pequenos)</label>
         </div>
       </div>
       <div class="stats">
         <span class="stat">Rostos: <b id="sFaces">0</b></span>
-        <span class="stat">Pontos desenhados: <b id="sPoints">0</b></span>
+        <span class="stat opt">Pontos desenhados: <b id="sPoints">0</b></span>
         <span class="stat">FPS: <b id="sFps">0</b></span>
-        <span class="stat">Inferência: <b id="sMs">0</b> ms</span>
+        <span class="stat opt">Inferência: <b id="sMs">0</b> ms</span>
         <span class="stat" id="sStatus">Câmera desligada</span>
       </div>
       <div class="stage" id="stage">
         <div class="placeholder" id="placeholder">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>
-          <div>Clique em <b>Ligar câmera</b>. O navegador vai pedir permissão; o processamento acontece só neste computador.</div>
+          <div>Clique em <b>Ligar câmera</b>. O navegador vai pedir permissão; o processamento acontece só neste aparelho.</div>
         </div>
+        <div class="flash" id="flash"></div>
+        <div class="rec" id="rec" hidden><i></i><span id="recText">REC 5s</span></div>
         <video id="video" playsinline muted></video>
         <canvas id="canvas"></canvas>
       </div>
@@ -185,12 +219,24 @@ function go(i) {
 }
 document.getElementById('prev').onclick = () => go(current - 1);
 document.getElementById('next').onclick = () => go(current + 1);
+document.getElementById('goLive').onclick = () => go(slides.length - 1);   // atalho para o slide "Ao vivo"
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || (e.key === ' ' && e.target.tagName === 'BUTTON')) return;
   if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(current + 1); }
   if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(current - 1); }
 });
 addEventListener('resize', () => go(current));
+// celular: deslizar o dedo troca de slide (menos em cima do palco da câmera e dos controles)
+let touchX = null, touchY = 0;
+document.addEventListener('touchstart', e => {
+  touchX = e.target.closest('.stage, .controls') ? null : e.touches[0].clientX; touchY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(current + (dx < 0 ? 1 : -1));
+  touchX = null;
+}, { passive: true });
 go(0);
 
 // ===================================================================== contornos
@@ -205,18 +251,56 @@ const FEATURES = [
   { key: 'FACE_LANDMARKS_RIGHT_IRIS',     name: 'Íris direita',         color: '#b794f4' },
   { key: 'FACE_LANDMARKS_LIPS',           name: 'Lábios',               color: '#fc8181' },
 ];
-const FACE_COLORS = ['#4fd1c5', '#f6ad55', '#63b3ed', '#fc8181', '#b794f4', '#68d391', '#f687b3', '#faf089', '#76e4f7', '#fbb6ce'];
+
+// Rosto 2D de exemplo (viewBox 100x120) usado nos cards do slide de contornos.
+const SHAPES = {
+  oval:  ['M50 8 C78 8 88 35 88 58 C88 88 70 112 50 112 C30 112 12 88 12 58 C12 35 22 8 50 8 Z'],
+  brows: ['M24 40 Q33 32 43 37', 'M57 37 Q67 32 76 40'],
+  eyes:  ['M26 52 Q34 45 42 52 Q34 59 26 52 Z', 'M58 52 Q66 45 74 52 Q66 59 58 52 Z'],
+  iris:  ['M30.5 52 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0', 'M62.5 52 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0'],
+  nose:  ['M50 56 L47 72 Q50 75 53 72'],
+  lips:  ['M36 88 Q43 82 50 85 Q57 82 64 88 Q50 99 36 88 Z', 'M37 88 Q50 91 63 88'],
+};
+const FEATURE_CARDS = [
+  { shape: 'oval',  name: 'Oval do rosto', color: '#4fd1c5', dots: 18, text: 'Contorno externo da face, da testa ao queixo. Diz onde está o rosto e qual o seu tamanho.' },
+  { shape: 'brows', name: 'Sobrancelhas',  color: '#f6ad55', dots: 5,  text: 'Arco acima de cada olho. Ajuda a ler expressões como surpresa ou dúvida.' },
+  { shape: 'eyes',  name: 'Olhos',         color: '#63b3ed', dots: 8,  text: 'Contorno das pálpebras. Mostra se o olho está aberto, fechado ou piscando.' },
+  { shape: 'iris',  name: 'Íris',          color: '#b794f4', dots: 4,  text: 'Círculo colorido do olho. Indica para onde a pessoa está olhando.' },
+  { shape: 'lips',  name: 'Lábios',        color: '#fc8181', dots: 10, text: 'Contorno externo e interno da boca. Revela fala e sorriso.' },
+];
 
 const featureList = document.getElementById('featureList');
-const legend = document.getElementById('legend');
-const seen = new Set();
-for (const f of FEATURES) {
-  if (seen.has(f.color + f.name.split(' ')[0])) continue;
-  seen.add(f.color + f.name.split(' ')[0]);
-  const label = f.name.replace(/ (esquerda|direita|esquerdo|direito)$/, '');
-  featureList.insertAdjacentHTML('beforeend', `<li><span class="swatch" style="background:${f.color}"></span>${label}</li>`);
-  legend.insertAdjacentHTML('beforeend', `<span><span class="swatch" style="background:${f.color}"></span>${label}</span>`);
+const NS = 'http://www.w3.org/2000/svg';
+for (const f of FEATURE_CARDS) {
+  const li = document.createElement('li');
+  li.style.setProperty('--c', f.color);
+  const base = Object.entries(SHAPES).filter(([k]) => k !== f.shape)
+    .flatMap(([, ds]) => ds).map(d => `<path class="face-base" d="${d}"/>`).join('');
+  li.innerHTML = `<svg viewBox="0 0 100 120" aria-hidden="true">${base}</svg>
+    <h3><span class="swatch" style="background:${f.color}"></span>${f.name}</h3><p>${f.text}</p>`;
+  featureList.appendChild(li);
+  // traço destacado + pontos distribuídos ao longo dele (como os pontos de contorno)
+  const svg = li.querySelector('svg');
+  SHAPES[f.shape].forEach(d => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d); p.setAttribute('class', 'face-hi');
+    svg.appendChild(p);
+    const len = p.getTotalLength();
+    p.style.setProperty('--len', len);
+    for (let i = 0; i < f.dots; i++) {
+      const pt = p.getPointAtLength(len * i / f.dots);
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y); c.setAttribute('r', 1.8);
+      c.setAttribute('class', 'face-dot');
+      c.style.animationDelay = `${(i / f.dots) * 0.5}s`;
+      svg.appendChild(c);
+    }
+  });
 }
+
+const legend = document.getElementById('legend');
+for (const f of FEATURE_CARDS)
+  legend.insertAdjacentHTML('beforeend', `<span><span class="swatch" style="background:${f.color}"></span>${f.name}</span>`);
 
 // ===================================================================== MediaPipe
 // Em Docker os arquivos ficam em ./vendor (sem internet); fora dele, cai para a CDN.
@@ -239,7 +323,7 @@ function tileLayout(W, H) {
   const pos = L => { const n = Math.ceil((L - S) / step) + 1; return Array.from({ length: n }, (_, i) => n === 1 ? 0 : Math.round(i * (L - S) / (n - 1))); };
   return pos(W).flatMap(x => pos(H).map(y => ({ x, y, s: S })));
 }
-let mp, landmarker, finder, trackers = [], groups;
+let mp, landmarker, finder, trackers = [], groups, createLandmarker, groupReady = null;
 async function loadModel(setStatus) {
   let base = './vendor', model = './vendor/face_landmarker.task';
   try { mp = await import('./vendor/vision_bundle.mjs'); }
@@ -258,12 +342,7 @@ async function loadModel(setStatus) {
     catch (e) { if (delegate === 'CPU') throw e; console.warn('GPU indisponível, usando CPU', e); delegate = 'CPU'; return create(runningMode, numFaces); }
   };
   landmarker = await create('VIDEO', MAX_FACES);             // quadro inteiro
-  setStatus('Preparando modo grupo…');
-  finder = await create('IMAGE', MAX_FACES);                 // descoberta nos recortes
-  for (let i = 0; i < MAX_FACES; i++) {                      // um rastreador por rosto pequeno
-    const canvas = document.createElement('canvas');
-    trackers.push({ lm: await create('VIDEO', 1), canvas, ctx: canvas.getContext('2d'), roi: null, misses: 0 });
-  }
+  createLandmarker = create;
 
   // Índices de pontos de cada característica (a partir das conexões do modelo).
   const FL = mp.FaceLandmarker;
@@ -272,7 +351,23 @@ async function loadModel(setStatus) {
     const idx = [...new Set(conns.flatMap(c => [c.start, c.end]))];
     return { ...f, conns, idx };
   });
-  groups.tess = FL.FACE_LANDMARKS_TESSELATION;
+}
+
+// Instâncias do modo grupo (11 modelos) só são criadas quando o modo é usado pela 1ª vez:
+// no celular elas pesam e podem passar do limite de contextos WebGL do navegador.
+function ensureGroup() {
+  return groupReady ||= (async () => {
+    const prev = $('sStatus').textContent;
+    setStatus('Preparando modo grupo…');
+    finder = await createLandmarker('IMAGE', MAX_FACES);       // descoberta nos recortes
+    const list = [];
+    for (let i = 0; i < MAX_FACES; i++) {                      // um rastreador por rosto pequeno
+      const c = document.createElement('canvas');
+      list.push({ lm: await createLandmarker('VIDEO', 1), canvas: c, ctx: c.getContext('2d'), roi: null, misses: 0 });
+    }
+    trackers = list;
+    setStatus(running ? 'Detectando' : prev);
+  })().catch(err => { console.error(err); groupReady = null; $('groupMode').checked = false; setStatus('Modo grupo indisponível neste aparelho'); });
 }
 
 // ===================================================================== câmera + loop
@@ -285,40 +380,80 @@ const placeholder = document.getElementById('placeholder');
 const $ = id => document.getElementById(id);
 const setStatus = t => $('sStatus').textContent = t;
 
-let stream = null, running = false, mode = 'contours';
+const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
+const snapBtn = $('snapBtn'), flipBtn = $('flipBtn'), fsBtn = $('fsBtn'), demoSlide = document.querySelector('.slide.demo');
+
+let stream = null, running = false, lastFaces = [];
+let facing = 'user';                                  // 'user' = frontal (espelhada), 'environment' = traseira
 let lastVideoTime = -1, frames = 0, fpsT = performance.now();
 
-$('modeSeg').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  mode = b.dataset.mode;
-  [...$('modeSeg').children].forEach(x => x.classList.toggle('active', x === b));
-});
-$('showVideo').onchange = e => stage.classList.toggle('hide-video', !e.target.checked);
+// No celular o modo grupo começa desligado (pesa bastante); dá para ligar na hora.
+$('groupMode').checked = !IS_TOUCH;
+$('groupMode').onchange = e => { if (e.target.checked && landmarker) ensureGroup(); };
 
 camBtn.onclick = () => running ? stop() : start();
+flipBtn.onclick = async () => {
+  flipBtn.disabled = true;
+  facing = facing === 'user' ? 'environment' : 'user';
+  try { await openCamera(); } catch (err) { showError(err); } finally { flipBtn.disabled = !running; }
+};
+snapBtn.onclick = saveFrame;
+
+// tela cheia só do slide "Ao vivo" (iPhone não suporta para elementos que não sejam vídeo)
+fsBtn.hidden = !document.fullscreenEnabled;
+fsBtn.onclick = () => document.fullscreenElement ? document.exitFullscreen() : demoSlide.requestFullscreen().catch(console.error);
+document.addEventListener('fullscreenchange', () => {
+  fsBtn.textContent = document.fullscreenElement ? '⛶ Sair da tela cheia' : '⛶ Tela cheia';
+});
+
+const showError = err => { console.error(err); setStatus('Erro: ' + (err.name === 'NotAllowedError' ? 'permissão negada' : err.message)); };
+
+async function openCamera() {
+  stream?.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ audio: false,
+    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: { ideal: facing } } });
+  video.srcObject = stream;
+  await video.play();
+  // a câmera pedida pode não existir (ex.: notebook sem traseira): usa o que veio de fato
+  const actual = stream.getVideoTracks()[0]?.getSettings().facingMode;
+  if (actual === 'user' || actual === 'environment') facing = actual;
+  fitToVideo();
+  trackers.forEach(t => t.roi = null);
+  lastFaces = []; lastVideoTime = -1;
+}
+
+// tamanho do canvas e recortes do modo grupo acompanham a resolução (ex.: celular em retrato)
+function fitToVideo() {
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  tiles = tileLayout(video.videoWidth, video.videoHeight);
+}
 
 async function start() {
+  // fora de localhost, página em HTTP não tem acesso à câmera: oferece o endereço HTTPS
+  if (!window.isSecureContext) {
+    const url = `https://${location.hostname}:31911${location.pathname}`;
+    $('sStatus').innerHTML = `Câmera bloqueada em HTTP. <a href="${url}" style="color:var(--accent)">Abrir em HTTPS</a>`;
+    return;
+  }
   camBtn.disabled = true;
   try {
-    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Câmera exige HTTPS ou localhost.');
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('este navegador não dá acesso à câmera.');
     if (!landmarker) { setStatus('Carregando modelo…'); await loadModel(setStatus); }
     setStatus('Pedindo acesso à câmera…');
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false });
-    video.srcObject = stream;
-    await video.play();
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    tiles = tileLayout(video.videoWidth, video.videoHeight);
-    trackers.forEach(t => t.roi = null);
+    await openCamera();
+    // só depois da permissão o navegador lista todas as câmeras
+    const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    flipBtn.hidden = cams.length < 2;
     placeholder.hidden = true;
-    running = true; lastVideoTime = -1;
+    running = true;
     camBtn.textContent = 'Desligar câmera'; camBtn.classList.add('on');
+    snapBtn.disabled = flipBtn.disabled = gifBtn.disabled = false;
+    loadGifenc().catch(() => {});                // já deixa o encoder pronto
     setStatus('Detectando');
+    if ($('groupMode').checked) ensureGroup();
     requestAnimationFrame(loop);
-  } catch (err) {
-    console.error(err);
-    setStatus('Erro: ' + (err.name === 'NotAllowedError' ? 'permissão negada' : err.message));
-  } finally { camBtn.disabled = false; }
+  } catch (err) { showError(err); }
+  finally { camBtn.disabled = false; }
 }
 
 function stop() {
@@ -326,24 +461,122 @@ function stop() {
   stream?.getTracks().forEach(t => t.stop()); stream = null;
   video.srcObject = null;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  lastFaces = [];
   placeholder.hidden = false;
   camBtn.textContent = 'Ligar câmera'; camBtn.classList.remove('on');
+  snapBtn.disabled = flipBtn.disabled = gifBtn.disabled = true;
   setStatus('Câmera desligada'); $('sFaces').textContent = 0; $('sPoints').textContent = 0; $('sFps').textContent = 0;
 }
+
+// ===================================================================== salvar frame
+// PNG só com os pontos (sem foto), sempre com a animação "completa" para nunca sair vazio.
+async function saveFrame() {
+  const out = document.createElement('canvas');
+  out.width = canvas.width; out.height = canvas.height;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#05070b'; octx.fillRect(0, 0, out.width, out.height);
+  renderFaces(octx, out.width, out.height, lastFaces, 0.7, facing === 'user');
+  const flash = $('flash'); flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+
+  const blob = await new Promise(r => out.toBlob(r, 'image/png'));
+  await saveBlob(blob, 'png', 'Frame salvo');
+}
+
+// celular: menu de compartilhar (permite "Salvar imagem" na galeria); desktop: download
+async function saveBlob(blob, ext, label) {
+  const d = new Date(), z = n => String(n).padStart(2, '0');
+  const name = `reconhecimento-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}.${ext}`;
+  const file = new File([blob], name, { type: blob.type });
+  if (IS_TOUCH && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'Reconhecimento facial' }); setStatus(label); return; }
+    catch (err) {
+      if (err.name === 'AbortError') { setStatus('Detectando'); return; }
+      // o "toque" do usuário expira enquanto o GIF é gerado; nesse caso cai para o download
+      console.warn('share falhou, baixando', err);
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  setStatus(`${label}: ${name}`);
+}
+
+// ===================================================================== GIF de 5 segundos
+// Grava a animação (só os pontos, sem foto) a 10 quadros/s e codifica no próprio navegador.
+const GIF_SECONDS = 5, GIF_FPS = 10, GIF_MAX_SIDE = 480;
+const gifBtn = $('gifBtn');
+let gifenc = null, recording = null;          // recording: { frames, timer } enquanto grava
+
+async function loadGifenc() {
+  if (gifenc) return gifenc;
+  try { gifenc = await import('./vendor/gifenc.esm.js'); }
+  catch { gifenc = await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js'); }
+  return gifenc;
+}
+
+gifBtn.onclick = async () => {
+  if (recording) return;
+  gifBtn.disabled = true;
+  try { await loadGifenc(); } catch (err) { showError(err); gifBtn.disabled = !running; return; }
+
+  const k = Math.min(1, GIF_MAX_SIDE / Math.max(canvas.width, canvas.height));
+  const w = Math.round(canvas.width * k), h = Math.round(canvas.height * k);
+  const frameCanvas = document.createElement('canvas'); frameCanvas.width = w; frameCanvas.height = h;
+  const fctx = frameCanvas.getContext('2d', { willReadFrequently: true });
+  const total = GIF_SECONDS * GIF_FPS, frames = [], t0 = performance.now();
+  const rec = $('rec'), recText = $('recText');
+  rec.hidden = false;
+
+  await new Promise(resolve => {
+    const grab = () => {
+      if (!running) return resolve();                          // câmera desligada no meio: para
+      fctx.setTransform(1, 0, 0, 1, 0, 0);
+      fctx.fillStyle = '#05070b'; fctx.fillRect(0, 0, w, h);
+      fctx.scale(k, k);                                        // desenha na escala reduzida
+      renderFaces(fctx, canvas.width, canvas.height, lastFaces, (performance.now() % CYCLE) / CYCLE, facing === 'user');
+      frames.push(fctx.getImageData(0, 0, w, h).data);
+      recText.textContent = `REC ${Math.max(0, GIF_SECONDS - (performance.now() - t0) / 1000).toFixed(1)}s`;
+      if (frames.length >= total) resolve();
+    };
+    grab();
+    recording = { timer: setInterval(grab, 1000 / GIF_FPS) };
+  });
+  clearInterval(recording.timer); recording = null;
+  rec.hidden = true;
+  if (!frames.length) { gifBtn.disabled = !running; return; }
+
+  // codificação em fatias para a tela não travar e mostrar o progresso
+  const { GIFEncoder, quantize, applyPalette } = gifenc;
+  const enc = GIFEncoder();
+  for (let i = 0; i < frames.length; i++) {
+    const palette = quantize(frames[i], 64);
+    enc.writeFrame(applyPalette(frames[i], palette), w, h, { palette, delay: 1000 / GIF_FPS });
+    if (i % 5 === 4) { setStatus(`Gerando GIF… ${Math.round((i + 1) / frames.length * 100)}%`); await new Promise(r => setTimeout(r)); }
+  }
+  enc.finish();
+  const blob = new Blob([enc.bytes()], { type: 'image/gif' });
+  await saveBlob(blob, 'gif', `GIF salvo (${(blob.size / 1024).toFixed(0)} KB)`);
+  gifBtn.disabled = !running;
+};
 
 function loop() {
   if (!running) return;
   if (video.currentTime !== lastVideoTime && video.readyState >= 2) {
     lastVideoTime = video.currentTime;
-    if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) fitToVideo();
     const t0 = performance.now();
     try {
-      const faces = detect(t0);
+      lastFaces = detect(t0);
       $('sMs').textContent = (performance.now() - t0).toFixed(1);
-      draw(faces);
       frames++;
     } catch (err) { console.error(err); }        // um quadro com erro não derruba o loop
   }
+  // a animação roda a cada quadro de tela, mesmo sem detecção nova
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const total = renderFaces(ctx, canvas.width, canvas.height, lastFaces, (performance.now() % CYCLE) / CYCLE, facing === 'user');
+  $('sFaces').textContent = lastFaces.length;
+  $('sPoints').textContent = total;
   const now = performance.now();
   if (now - fpsT >= 1000) { $('sFps').textContent = Math.round(frames * 1000 / (now - fpsT)); frames = 0; fpsT = now; }
   requestAnimationFrame(loop);
@@ -380,7 +613,8 @@ function roiFor(box) {
 
 function detect(ts) {
   const faces = (landmarker.detectForVideo(video, ts).faceLandmarks || []).map(lm => ({ lm, box: bbox(lm) }));
-  if (!$('groupMode').checked) { trackers.forEach(t => t.roi = null); return faces.map(f => f.lm); }
+  // modo grupo desligado ou ainda carregando: só o quadro inteiro
+  if (!$('groupMode').checked || !finder) { trackers.forEach(t => t.roi = null); return faces.map(f => f.lm); }
 
   // 2. rastreio dos rostos pequenos já conhecidos
   for (const t of trackers) {
@@ -418,54 +652,79 @@ function detect(ts) {
 }
 
 // ===================================================================== desenho
-function draw(faces) {
-  const W = canvas.width, H = canvas.height;
-  const px = p => [(1 - p.x) * W, p.y * H];          // espelhado, igual ao vídeo
-  const r = Math.max(1.5, W / 640);
-  ctx.clearRect(0, 0, W, H);
+// Mesma animação dos cards do slide 3, em ciclos de 3,2 s:
+//  - base apagada com todos os contornos (sempre visível);
+//  - traço colorido de cada característica "se desenha" (0–45%), fica (até 85%) e some (100%);
+//  - os pontos surgem com um "pop" (40–58%, escalonados em até 0,5 s) e somem junto.
+const CYCLE = 3200, BASE_COLOR = '#2c3854';
+const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = t => t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;          // ease-in-out
+const clamp01 = t => Math.min(1, Math.max(0, t));
+
+function lineState(ph) {                         // -> [fração desenhada, opacidade]
+  if (REDUCED_MOTION) return [1, 1];
+  if (ph < .45) return [ease(ph / .45), 1];
+  if (ph < .85) return [1, 1];
+  return [1, 1 - (ph - .85) / .15];
+}
+function dotState(ph) {                          // -> [escala, opacidade]
+  if (REDUCED_MOTION) return [1, 1];
+  if (ph < .40) return [0, 0];
+  if (ph < .50) { const t = (ph - .40) / .10; return [1.6 * t, t]; }
+  if (ph < .58) return [1.6 - .6 * (ph - .50) / .08, 1];
+  if (ph < .85) return [1, 1];
+  return [1, 1 - (ph - .85) / .15];
+}
+
+// Desenha os rostos em qualquer canvas (tela ou PNG salvo). phase: 0–1 do ciclo.
+// mirror: câmera frontal é espelhada (como um espelho); a traseira não.
+// Retorna o total de pontos desenhados.
+function renderFaces(ctx, W, H, faces, phase, mirror) {
+  const px = mirror ? p => [(1 - p.x) * W, p.y * H] : p => [p.x * W, p.y * H];
+  ctx.lineCap = ctx.lineJoin = 'round';
+  const [drawn, lineAlpha] = lineState(phase);
   let total = 0;
 
-  faces.forEach((lm, fi) => {
-    const faceColor = FACE_COLORS[fi % FACE_COLORS.length];
+  for (const lm of faces) {
+    // espessuras proporcionais ao rosto (rostos pequenos/longe ficam com traço fino)
+    let x0 = 1, x1 = 0; for (const p of lm) { if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x; }
+    const fw = (x1 - x0) * W, lw = Math.max(1, fw * 0.022), r = Math.max(1.2, fw * 0.018);
 
-    if (mode === 'mesh') {
-      ctx.strokeStyle = faceColor + '55'; ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (const c of groups.tess) { const [ax, ay] = px(lm[c.start]); const [bx, by] = px(lm[c.end]); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); }
-      ctx.stroke();
-      ctx.fillStyle = faceColor;
-      for (const p of lm) { const [x, y] = px(p); ctx.fillRect(x - r / 2, y - r / 2, r, r); }
-      total += lm.length;
-    } else {
-      for (const g of groups) {
-        if (mode === 'contours') {
-          ctx.strokeStyle = g.color; ctx.lineWidth = r * 0.9; ctx.globalAlpha = 0.7;
-          ctx.beginPath();
-          for (const c of g.conns) { const [ax, ay] = px(lm[c.start]); const [bx, by] = px(lm[c.end]); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); }
-          ctx.stroke(); ctx.globalAlpha = 1;
-        }
-        ctx.fillStyle = mode === 'points' ? faceColor : g.color;
-        ctx.beginPath();
-        for (const i of g.idx) { const [x, y] = px(lm[i]); ctx.moveTo(x + r * 1.4, y); ctx.arc(x, y, r * 1.4, 0, Math.PI * 2); }
-        ctx.fill();
-        total += g.idx.length;
-      }
+    // base apagada
+    ctx.globalAlpha = 1; ctx.strokeStyle = BASE_COLOR; ctx.lineWidth = lw * 0.7;
+    ctx.beginPath();
+    for (const g of groups) for (const c of g.conns) {
+      const [ax, ay] = px(lm[c.start]), [bx, by] = px(lm[c.end]); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
     }
+    ctx.stroke();
 
-    // caixa + rótulo do rosto
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const p of lm) { const [x, y] = px(p); if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
-    ctx.strokeStyle = faceColor; ctx.lineWidth = Math.max(1, r); ctx.setLineDash([6 * r, 4 * r]);
-    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY); ctx.setLineDash([]);
-    const label = `Rosto ${fi + 1}`;
-    ctx.font = `600 ${Math.round(12 * r)}px Segoe UI, system-ui, sans-serif`;
-    const tw = ctx.measureText(label).width + 10 * r, th = 18 * r;
-    ctx.fillStyle = faceColor; ctx.fillRect(minX, minY - th, tw, th);
-    ctx.fillStyle = '#0b0f17'; ctx.fillText(label, minX + 5 * r, minY - 5 * r);
-  });
+    for (const g of groups) {
+      // traço que se desenha
+      const n = g.conns.length, upto = drawn * n;
+      ctx.globalAlpha = lineAlpha; ctx.strokeStyle = g.color; ctx.lineWidth = lw;
+      ctx.beginPath();
+      for (let k = 0; k < n && k < upto; k++) {
+        const c = g.conns[k], [ax, ay] = px(lm[c.start]), [bx, by] = px(lm[c.end]);
+        const f = Math.min(1, upto - k);                    // último segmento parcialmente desenhado
+        ctx.moveTo(ax, ay); ctx.lineTo(ax + (bx - ax) * f, ay + (by - ay) * f);
+      }
+      ctx.stroke();
 
-  $('sFaces').textContent = faces.length;
-  $('sPoints').textContent = total;
+      // pontos com "pop" escalonado
+      ctx.fillStyle = g.color;
+      g.idx.forEach((i, j) => {
+        const delay = (j / g.idx.length) * 500 / CYCLE;
+        const [s, a] = dotState(((phase - delay) % 1 + 1) % 1);
+        if (a <= 0 || s <= 0) return;
+        const [x, y] = px(lm[i]);
+        ctx.globalAlpha = clamp01(a);
+        ctx.beginPath(); ctx.arc(x, y, r * s, 0, Math.PI * 2); ctx.fill();
+      });
+      total += g.idx.length;
+    }
+  }
+  ctx.globalAlpha = 1;
+  return total;
 }
 </script>
 </body>
