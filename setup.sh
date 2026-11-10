@@ -92,8 +92,13 @@ EOF
 step "Subindo boopateway (API + portal)"
 (cd "$GATE_DIR" && docker compose up -d --build)
 
-# ---------------------------------------------------------------- 9. resumo
+# ---------------------------------------------------------------- 9. subir demo
+step "Subindo demo de reconhecimento facial"
+docker compose -p boopdemo -f "$ROOT/docker/demo.compose.yml" up -d --build
+
+# ---------------------------------------------------------------- 10. resumo
 step "Ambiente pronto"
+echo "demo (reconhecimento):     http://localhost:31910"
 echo "booprecognition (Swagger): $RECOGNITION_URL/docs"
 echo "boopateway API:            http://localhost:31800"
 echo "boopateway portal:         http://localhost:31801"

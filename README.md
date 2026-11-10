@@ -28,7 +28,8 @@ O script:
 2. configura o `config.yaml` do booprecognition com `target: sqlite` e gera o `.env` com as credenciais de teste;
 3. sobe o booprecognition (`docker/booprecognition.compose.yml`) na porta **31900**;
 4. espera a API responder e emite um token OAuth (`client_credentials`, sem expiração);
-5. grava o `.env` do boopateway (`BOOP_TOKEN`, senha do portal e credenciais OAuth) e sobe o compose dele (API e portal).
+5. grava o `.env` do boopateway (`BOOP_TOKEN`, senha do portal e credenciais OAuth) e sobe o compose dele (API e portal);
+6. sobe a página de demonstração (`demo/`, `docker/demo.compose.yml`) na porta **31910**.
 
 O primeiro build do booprecognition baixa os modelos InsightFace e leva vários minutos. Rodar o script de novo é seguro: ele atualiza os repositórios e recria os containers.
 
@@ -36,6 +37,7 @@ O primeiro build do booprecognition baixa os modelos InsightFace e leva vários 
 
 | Serviço | URL |
 |---|---|
+| demo de reconhecimento facial (slides + câmera) | http://localhost:31910 |
 | booprecognition (Swagger) | http://localhost:31900/docs |
 | boopateway API | http://localhost:31800 |
 | boopateway portal | http://localhost:31801 (login com a senha `teste123`) |
@@ -71,5 +73,19 @@ docker compose -p booprecognition -f docker/booprecognition.compose.yml down
 ```bash
 docker compose -f workspace/boopateway/docker-compose.yml down
 ```
+
+```bash
+docker compose -p boopdemo -f docker/demo.compose.yml down
+```
+
+## Demo de reconhecimento facial
+
+`demo/index.html` é uma apresentação em slides (← → para navegar). No último slide, **Ligar câmera** desenha em tempo real os contornos do rosto (oval, sobrancelhas, olhos, íris, lábios) de até 10 pessoas. ML Kit não roda no navegador; a página usa o equivalente web do Google, o MediaPipe Face Landmarker, e todo o processamento é local. O detector web é de curto alcance; com **modo grupo** ligado (padrão), a página também procura rostos pequenos em recortes do quadro e rastreia cada um num recorte ampliado. O custo é de ~10 ms por rosto por quadro (RTX 5070: 1 rosto ≈ 30 FPS, 10 rostos ≈ 7 FPS nos pontos; o vídeo continua fluido). O build da imagem baixa a biblioteca e o modelo, então a página não depende de internet depois de construída. Para subir só a demo:
+
+```bash
+docker compose -p boopdemo -f docker/demo.compose.yml up -d --build
+```
+
+A câmera exige contexto seguro: abra por `localhost` (ou HTTPS).
 
 Adicione `-v` para apagar também os volumes (bancos SQLite e fotos).

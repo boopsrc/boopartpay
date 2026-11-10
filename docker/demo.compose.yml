@@ -1,0 +1,10 @@
+# Página de demonstração do reconhecimento facial (pasta ../demo).
+# A câmera só funciona em contexto seguro: abra por http://localhost:31910.
+services:
+  boopdemo:
+    build: ../demo
+    image: boopdemo:latest
+    container_name: boopdemo
+    restart: unless-stopped
+    ports:
+      - "31910:80"

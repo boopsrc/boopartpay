@@ -113,8 +113,13 @@ Step 'Subindo boopateway (API + portal)'
 Push-Location $GateDir
 try { Run docker @('compose', 'up', '-d', '--build') } finally { Pop-Location }
 
-# ---------------------------------------------------------------- 9. resumo
+# ---------------------------------------------------------------- 9. subir demo
+Step 'Subindo demo de reconhecimento facial'
+Run docker @('compose', '-p', 'boopdemo', '-f', (Join-Path $Root 'docker\demo.compose.yml'), 'up', '-d', '--build')
+
+# ---------------------------------------------------------------- 10. resumo
 Step 'Ambiente pronto'
+Write-Host 'demo (reconhecimento):     http://localhost:31910'
 Write-Host "booprecognition (Swagger): $RecognitionUrl/docs"
 Write-Host 'boopateway API:            http://localhost:31800'
 Write-Host 'boopateway portal:         http://localhost:31801'
