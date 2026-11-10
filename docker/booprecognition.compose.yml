@@ -1,0 +1,22 @@
+# booprecognition para o ambiente de teste (o repositório não traz um compose).
+# Caminhos relativos a esta pasta; o clone fica em ../workspace/booprecognition.
+services:
+  booprecognition:
+    build: ../workspace/booprecognition
+    image: booprecognition:latest
+    container_name: booprecognition
+    restart: unless-stopped
+    ports:
+      # o docker-compose do boopateway espera o booprecognition no host, porta 31900
+      - "31900:8000"
+    env_file:
+      - ../workspace/booprecognition/.env
+    environment:
+      BOOP_TARGET: sqlite
+      BOOP_SQLITE_PATH: /app/data/booprecognition.db
+    volumes:
+      - booprecognition-data:/app/data
+      - ../workspace/booprecognition/config.yaml:/app/config.yaml:ro
+
+volumes:
+  booprecognition-data:
