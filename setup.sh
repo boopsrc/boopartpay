@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Setup do ambiente de teste boopartpay (Linux / macOS).
-# Clona booprecognition e boopateway, configura e sobe tudo no Docker.
+# Clona booprecognition, boopateway e boopateway-web, configura e sobe tudo no Docker.
 # Uso: ./setup.sh   (ou: bash setup.sh)
 set -euo pipefail
 
@@ -17,6 +17,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE="$ROOT/workspace"
 REC_DIR="$WORKSPACE/booprecognition"
 GATE_DIR="$WORKSPACE/boopateway"
+WEB_DIR="$WORKSPACE/boopateway-web"
 
 step() { printf '\n\033[36m==> %s\033[0m\n' "$1"; }
 fail() { printf '\033[31mERRO: %s\033[0m\n' "$1" >&2; exit 1; }
@@ -44,6 +45,7 @@ clone_or_pull() {
 }
 clone_or_pull booprecognition https://github.com/boopsrc/booprecognition.git
 clone_or_pull boopateway      https://github.com/boopsrc/boopateway.git
+clone_or_pull boopateway-web  https://github.com/boopsrc/boopateway-web.git
 
 # ---------------------------------------------------------------- 3. config.yaml -> sqlite
 step "Configurando booprecognition para SQLite"
@@ -95,6 +97,11 @@ EOF
 step "Subindo boopateway (API + portal)"
 (cd "$GATE_DIR" && docker compose up -d --build)
 
+# ---------------------------------------------------------------- 8b. subir boopateway-web
+#    POS FacePay web; o nginx dele repassa /api para o gateway em host.docker.internal:31800
+step "Subindo boopateway-web (POS FacePay)"
+(cd "$WEB_DIR" && docker compose -p boopateway-web up -d --build)
+
 # ---------------------------------------------------------------- 9. resumo
 step "Ambiente pronto"
 LAN_IP="$( (hostname -I 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || true) | awk '{print $1}')"
@@ -103,6 +110,8 @@ echo "demo no celular (HTTPS):   https://${LAN_IP:-<IP-do-computador>}:31911  (c
 echo "booprecognition (Swagger): $RECOGNITION_URL/docs"
 echo "boopateway API:            http://localhost:31800"
 echo "boopateway portal:         http://localhost:31801"
+echo "boopateway-web (POS):      http://localhost:31802"
+echo "POS no celular (HTTPS):    https://${LAN_IP:-<IP-do-computador>}:31803  (certificado autoassinado: aceite o aviso)"
 echo "senha do portal:           $ADMIN_PASSWORD"
 echo "client_id / secret:        $CLIENT_ID / $CLIENT_SECRET"
 echo "scopes do portal:          $ADMIN_SCOPE"
