@@ -53,9 +53,12 @@ rm -f "$REC_DIR/config.yaml.bak"
 # ---------------------------------------------------------------- 4. .env do booprecognition
 printf 'BOOP_JWT_SECRET=%s\nBOOP_CLIENT_ADMIN_SECRET=%s\n' "$JWT_SECRET" "$CLIENT_SECRET" > "$REC_DIR/.env"
 
-# ---------------------------------------------------------------- 5. subir booprecognition
+# ---------------------------------------------------------------- 5. subir booprecognition + demo
+#    a demo não depende de nada: sobe já, junto, e fica no ar mesmo se o resto falhar
 step "Subindo booprecognition (o primeiro build baixa os modelos e demora)"
 docker compose -p booprecognition -f "$ROOT/docker/booprecognition.compose.yml" up -d --build
+step "Subindo demo de reconhecimento facial"
+docker compose -p boopdemo -f "$ROOT/docker/demo.compose.yml" up -d --build
 
 # ---------------------------------------------------------------- 6. aguardar e pegar token
 step "Aguardando booprecognition em $RECOGNITION_URL e emitindo token"
@@ -94,6 +97,9 @@ step "Subindo boopateway (API + portal)"
 
 # ---------------------------------------------------------------- 9. resumo
 step "Ambiente pronto"
+LAN_IP="$( (hostname -I 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || true) | awk '{print $1}')"
+echo "demo (reconhecimento):     http://localhost:31910"
+echo "demo no celular (HTTPS):   https://${LAN_IP:-<IP-do-computador>}:31911  (certificado autoassinado: aceite o aviso)"
 echo "booprecognition (Swagger): $RECOGNITION_URL/docs"
 echo "boopateway API:            http://localhost:31800"
 echo "boopateway portal:         http://localhost:31801"
