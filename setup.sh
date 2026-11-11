@@ -11,6 +11,7 @@ CLIENT_SECRET="${BOOP_CLIENT_ADMIN_SECRET:-boopartpay-test-admin-secret}"
 ADMIN_SCOPE="${BOOP_ADMIN_SCOPE:-identify persons:write persons:delete}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-teste123}"
 RECOGNITION_URL="http://localhost:31900"
+WEB_API_URL="${VITE_API_URL:-https://apipay.depois.click}"   # gateway que o POS web chama
 WAIT_SECONDS=600
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -97,8 +98,9 @@ EOF
 step "Subindo boopateway (API + portal)"
 (cd "$GATE_DIR" && docker compose up -d --build)
 
-# ---------------------------------------------------------------- 8b. subir boopateway-web
-#    POS FacePay web; o nginx dele repassa /api para o gateway em host.docker.internal:31800
+# ---------------------------------------------------------------- 8b. .env + subir boopateway-web
+#    POS FacePay web; o navegador chama o gateway direto em VITE_API_URL (fixado no build)
+printf 'VITE_API_URL=%s\nVITE_DEMO=false\n' "$WEB_API_URL" > "$WEB_DIR/.env"
 step "Subindo boopateway-web (POS FacePay)"
 (cd "$WEB_DIR" && docker compose -p boopateway-web up -d --build)
 
@@ -111,7 +113,7 @@ echo "booprecognition (Swagger): $RECOGNITION_URL/docs"
 echo "boopateway API:            http://localhost:31800"
 echo "boopateway portal:         http://localhost:31801"
 echo "boopateway-web (POS):      http://localhost:31802"
-echo "POS no celular (HTTPS):    https://${LAN_IP:-<IP-do-computador>}:31803  (certificado autoassinado: aceite o aviso)"
+echo "API usada pelo POS web:    $WEB_API_URL"
 echo "senha do portal:           $ADMIN_PASSWORD"
 echo "client_id / secret:        $CLIENT_ID / $CLIENT_SECRET"
 echo "scopes do portal:          $ADMIN_SCOPE"

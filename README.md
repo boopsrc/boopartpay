@@ -29,7 +29,7 @@ O script:
 3. sobe o booprecognition (`docker/booprecognition.compose.yml`) na porta **31900** e, junto, a página de demonstração (`demo/`, `docker/demo.compose.yml`) nas portas **31910** (HTTP) e **31911** (HTTPS, para o celular). A demo não depende dos outros serviços, então fica no ar mesmo se algum passo seguinte falhar;
 4. espera a API responder e emite um token OAuth (`client_credentials`, sem expiração);
 5. grava o `.env` do boopateway (`BOOP_TOKEN`, senha do portal e credenciais OAuth) e sobe o compose dele (API e portal);
-6. sobe o boopateway-web (POS FacePay em React) nas portas **31802** (HTTP) e **31803** (HTTPS, para o celular). O nginx dele repassa `/api/*` para o gateway na porta 31800.
+6. grava o `.env` do boopateway-web com `VITE_API_URL=https://apipay.depois.click` (para usar outro gateway, defina `VITE_API_URL` antes de rodar o setup) e sobe o POS FacePay em React na porta **31802**. O navegador chama o gateway direto nesse endereço, fixado no build.
 
 O primeiro build do booprecognition baixa os modelos InsightFace e leva vários minutos. Rodar o script de novo é seguro: ele atualiza os repositórios e recria os containers.
 
@@ -43,7 +43,6 @@ O primeiro build do booprecognition baixa os modelos InsightFace e leva vários 
 | boopateway API | http://localhost:31800 |
 | boopateway portal | http://localhost:31801 (login com a senha `teste123`) |
 | boopateway-web (POS FacePay) | http://localhost:31802 |
-| POS pelo celular (HTTPS, mesma rede) | https://IP-do-computador:31803 |
 
 ## Credenciais de teste
 
@@ -107,4 +106,4 @@ A câmera exige contexto seguro: abra por `localhost` (ou HTTPS).
 2. Abra `https://<IP-do-computador>:31911` (o setup mostra o endereço no final). Quem abrir `http://<IP>:31910` é redirecionado para o HTTPS, porque fora de `localhost` o navegador bloqueia a câmera em HTTP.
 3. O certificado é autoassinado: o navegador avisa uma vez; toque em "Avançado" → "Continuar".
 
-No celular o slide "Ao vivo" ocupa a tela, tem **Trocar câmera** (frontal/traseira) e **Tela cheia** (não disponível no iPhone), e dá para deslizar o dedo para trocar de slide. O **modo grupo** começa desligado em telas de toque, porque pesa bastante; dá para ligar na hora. Se o Windows bloquear o acesso, libere as portas 31910–31911 (e 31802–31803, do POS) no firewall.
+No celular o slide "Ao vivo" ocupa a tela, tem **Trocar câmera** (frontal/traseira) e **Tela cheia** (não disponível no iPhone), e dá para deslizar o dedo para trocar de slide. O **modo grupo** começa desligado em telas de toque, porque pesa bastante; dá para ligar na hora. Se o Windows bloquear o acesso, libere as portas 31910–31911 (e 31802, do POS) no firewall.
