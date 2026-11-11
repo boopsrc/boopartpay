@@ -13,6 +13,7 @@ $ClientSecret = if ($env:BOOP_CLIENT_ADMIN_SECRET) { $env:BOOP_CLIENT_ADMIN_SECR
 $AdminScope   = if ($env:BOOP_ADMIN_SCOPE)         { $env:BOOP_ADMIN_SCOPE }         else { 'identify persons:write persons:delete' }
 $AdminPassword = if ($env:ADMIN_PASSWORD)          { $env:ADMIN_PASSWORD }           else { 'teste123' }
 $RecognitionUrl = 'http://localhost:31900'
+$WebApiUrl = if ($env:VITE_API_URL) { $env:VITE_API_URL } else { 'https://apipay.depois.click' }   # gateway que o POS web chama
 $WaitSeconds = 600
 
 $Root      = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -118,8 +119,9 @@ Step 'Subindo boopateway (API + portal)'
 Push-Location $GateDir
 try { Run docker @('compose', 'up', '-d', '--build') } finally { Pop-Location }
 
-# ---------------------------------------------------------------- 8b. subir boopateway-web
-#    POS FacePay web; o nginx dele repassa /api para o gateway em host.docker.internal:31800
+# ---------------------------------------------------------------- 8b. .env + subir boopateway-web
+#    POS FacePay web; o navegador chama o gateway direto em VITE_API_URL (fixado no build)
+Write-TextFile (Join-Path $WebDir '.env') "VITE_API_URL=$WebApiUrl`nVITE_DEMO=false`n"
 Step 'Subindo boopateway-web (POS FacePay)'
 Push-Location $WebDir
 try { Run docker @('compose', '-p', 'boopateway-web', 'up', '-d', '--build') } finally { Pop-Location }
@@ -140,7 +142,7 @@ Write-Host "booprecognition (Swagger): $RecognitionUrl/docs"
 Write-Host 'boopateway API:            http://localhost:31800'
 Write-Host 'boopateway portal:         http://localhost:31801'
 Write-Host 'boopateway-web (POS):      http://localhost:31802'
-Write-Host "POS no celular (HTTPS):    https://${LanIp}:31803  (certificado autoassinado: aceite o aviso)"
+Write-Host "API usada pelo POS web:    $WebApiUrl"
 Write-Host "senha do portal:           $AdminPassword"
 Write-Host "client_id / secret:        $ClientId / $ClientSecret"
 Write-Host "scopes do portal:          $AdminScope"
