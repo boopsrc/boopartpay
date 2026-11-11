@@ -1,5 +1,5 @@
 # Setup do ambiente de teste boopartpay (Windows / PowerShell 5.1+).
-# Clona booprecognition e boopateway, configura e sobe tudo no Docker.
+# Clona booprecognition, boopateway e boopateway-web, configura e sobe tudo no Docker.
 # Uso: .\setup.cmd   (ou: powershell -ExecutionPolicy Bypass -File setup.ps1)
 # Arquivo mantido em ASCII: o PowerShell 5.1 le scripts sem BOM como ANSI.
 
@@ -20,6 +20,7 @@ $Workspace = Join-Path $Root 'workspace'
 $Repos = [ordered]@{
     'booprecognition' = 'https://github.com/boopsrc/booprecognition.git'
     'boopateway'      = 'https://github.com/boopsrc/boopateway.git'
+    'boopateway-web'  = 'https://github.com/boopsrc/boopateway-web.git'
 }
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
@@ -57,6 +58,7 @@ foreach ($name in $Repos.Keys) {
 }
 $RecDir  = Join-Path $Workspace 'booprecognition'
 $GateDir = Join-Path $Workspace 'boopateway'
+$WebDir  = Join-Path $Workspace 'boopateway-web'
 
 # ---------------------------------------------------------------- 3. config.yaml -> sqlite
 Step 'Configurando booprecognition para SQLite'
@@ -116,6 +118,12 @@ Step 'Subindo boopateway (API + portal)'
 Push-Location $GateDir
 try { Run docker @('compose', 'up', '-d', '--build') } finally { Pop-Location }
 
+# ---------------------------------------------------------------- 8b. subir boopateway-web
+#    POS FacePay web; o nginx dele repassa /api para o gateway em host.docker.internal:31800
+Step 'Subindo boopateway-web (POS FacePay)'
+Push-Location $WebDir
+try { Run docker @('compose', '-p', 'boopateway-web', 'up', '-d', '--build') } finally { Pop-Location }
+
 # ---------------------------------------------------------------- 9. resumo
 Step 'Ambiente pronto'
 $LanIp = $null
@@ -131,6 +139,8 @@ Write-Host "demo no celular (HTTPS):   https://${LanIp}:31911  (certificado auto
 Write-Host "booprecognition (Swagger): $RecognitionUrl/docs"
 Write-Host 'boopateway API:            http://localhost:31800'
 Write-Host 'boopateway portal:         http://localhost:31801'
+Write-Host 'boopateway-web (POS):      http://localhost:31802'
+Write-Host "POS no celular (HTTPS):    https://${LanIp}:31803  (certificado autoassinado: aceite o aviso)"
 Write-Host "senha do portal:           $AdminPassword"
 Write-Host "client_id / secret:        $ClientId / $ClientSecret"
 Write-Host "scopes do portal:          $AdminScope"
